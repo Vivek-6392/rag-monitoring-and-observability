@@ -36,7 +36,23 @@ class GateResult:
             self.timestamp = time.time()
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        import numpy as np
+
+        def sanitize(obj):
+            if isinstance(obj, dict):
+                return {k: sanitize(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [sanitize(v) for v in obj]
+            elif isinstance(obj, (np.bool_,)):
+                return bool(obj)
+            elif isinstance(obj, (np.integer,)):
+                return int(obj)
+            elif isinstance(obj, (np.floating,)):
+                return float(obj)
+            else:
+                return obj
+
+        return sanitize(asdict(self))
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2)
