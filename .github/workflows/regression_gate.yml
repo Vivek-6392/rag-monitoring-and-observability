@@ -1,0 +1,148 @@
+name: RAG Regression Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ───────────────────────────────────────────────────────
+  # Job 1: Unit tests (no API key needed, always runs)
+  # ───────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          pytest tests/test_regression.py \
+            -v \
+            -k "not Integration" \
+            --tb=short \
+            --junit-xml=reports/unit-test-results.xml
+
+      - name: Upload unit test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: reports/unit-test-results.xml
+
+  # ───────────────────────────────────────────────────────
+  # Job 2: Integration + regression gate (needs API key)
+  # Runs on push to main or PRs with the secret available
+  # ───────────────────────────────────────────────────────
+  integration-regression:
+    name: Integration & Regression Gate
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run integration tests
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: llama3-8b-8192
+          P95_LATENCY_THRESHOLD_MS: "8000"
+          QUALITY_SCORE_THRESHOLD: "0.4"
+          METRICS_DB_PATH: /tmp/ci_metrics.db
+        run: |
+          pytest tests/test_regression.py \
+            -v \
+            --tb=short \
+            --junit-xml=reports/integration-test-results.xml
+        continue-on-error: false
+
+      - name: Run full regression eval
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: llama3-8b-8192
+          P95_LATENCY_THRESHOLD_MS: "8000"
+          QUALITY_SCORE_THRESHOLD: "0.4"
+          METRICS_DB_PATH: /tmp/ci_metrics.db
+          BASELINE_PATH: evaluation/baseline.json
+        run: |
+          python - <<'EOF'
+          import sys
+          sys.path.insert(0, ".")
+
+          from rag.ingest import ingest_sample_documents
+          from evaluation.ragas_eval import run_batch_evaluation
+          from evaluation.regression_gate import gate_or_exit
+          from rag.pipeline import run_rag_query
+
+          print("📚 Ingesting sample documents…")
+          n = ingest_sample_documents()
+          print(f"  Loaded {n} chunks")
+
+          print("\n🧪 Running batch evaluation…")
+          eval_result = run_batch_evaluation(run_rag_query)
+
+          summary = eval_result["summary"]
+          print(f"\n📊 Eval Summary:")
+          print(f"  Queries:       {summary['total_queries']}")
+          print(f"  Successful:    {summary['successful']}")
+          print(f"  Avg Quality:   {summary['avg_quality_score']:.4f}")
+          print(f"  p95 Latency:   {summary['p95_latency_ms']:.0f}ms")
+          print(f"  Total Cost:    ${summary['total_cost_usd']:.5f}")
+
+          print("\n🚦 Running regression gate…")
+          gate_or_exit(summary)
+          EOF
+
+      - name: Upload integration test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: reports/integration-test-results.xml
+
+      - name: Comment PR with results
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            const icon = status === 'success' ? '✅' : '❌';
+            const body = `## ${icon} RAG Regression Gate — ${status.toUpperCase()}
+
+            | Check | Result |
+            |-------|--------|
+            | Unit Tests | ${{ needs.unit-tests.result == 'success' && '✅ Passed' || '❌ Failed' }} |
+            | Integration Tests | ${status === 'success' ? '✅ Passed' : '❌ Failed'} |
+            | Regression Gate | ${status === 'success' ? '✅ All gates passed' : '❌ Regression detected'} |
+
+            See the **Actions** tab for detailed latency and quality metrics.
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
