@@ -39,7 +39,7 @@ st.caption("Run quality evaluation over a test set · Regression gating against 
 st.divider()
 
 api_key = st.session_state.get("groq_api_key", "")
-model = st.session_state.get("model", "llama3-8b-8192")
+model = st.session_state.get("model", "llama-3.1-70b-versatile")
 
 with st.sidebar:
     api_key = st.text_input("Groq API Key", type="password", value=api_key)

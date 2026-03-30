@@ -59,7 +59,7 @@ st.divider()
 
 # ── Sidebar state ────────────────────────────────────────────────
 api_key = st.session_state.get("groq_api_key", "")
-model = st.session_state.get("model", "llama3-8b-8192")
+model = st.session_state.get("model", "llama-3.1-70b-versatile")
 
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
@@ -68,10 +68,42 @@ with st.sidebar:
         st.session_state["groq_api_key"] = api_key
     model = st.selectbox(
         "Model",
-        ["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"],
-        index=["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"].index(model)
-        if model in ["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"] else 0,
+        [
+            "llama-3.1-8b-instant",
+            "llama-3.1-70b-versatile",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+            "deepseek-r1-distill-llama-70b",
+            "deepseek-r1-distill-qwen-32b",
+            "gpt-oss-20b",
+            "gpt-oss-120b",
+            "groq/compound",
+        ],
+        index=[
+            "llama-3.1-8b-instant",
+            "llama-3.1-70b-versatile",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+            "deepseek-r1-distill-llama-70b",
+            "deepseek-r1-distill-qwen-32b",
+            "gpt-oss-20b",
+            "gpt-oss-120b",
+            "groq/compound",
+        ].index(model)
+        if model in [
+            "llama-3.1-8b-instant",
+            "llama-3.1-70b-versatile",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+            "deepseek-r1-distill-llama-70b",
+            "deepseek-r1-distill-qwen-32b",
+            "gpt-oss-20b",
+            "gpt-oss-120b",
+            "groq/compound",
+        ]
+        else 0,
     )
+
     st.session_state["model"] = model
     eval_quality = st.toggle("Run quality eval", value=True,
                               help="Adds ~3 extra LLM calls to score faithfulness, relevancy, precision")

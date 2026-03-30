@@ -6,13 +6,31 @@ import tiktoken
 
 # Cost in USD per 1K tokens (input, output)
 MODEL_COST_PER_1K_TOKENS = {
-    "llama3-8b-8192":       (0.00005, 0.00008),
-    "llama3-70b-8192":      (0.00059, 0.00079),
-    "mixtral-8x7b-32768":   (0.00024, 0.00024),
-    "gemma2-9b-it":         (0.00020, 0.00020),
-    # default fallback
-    "default":              (0.00010, 0.00010),
+    # Llama 3.1
+    "llama-3.1-8b-instant":      (0.00005, 0.00008),
+    "llama-3.1-70b-versatile":   (0.00059, 0.00079),
+
+    # Mixtral
+    "mixtral-8x7b-32768":        (0.00027, 0.00027),
+
+    # Gemma2
+    "gemma2-9b-it":              (0.00020, 0.00020),
+
+    # DeepSeek R1 Distill
+    "deepseek-r1-distill-llama-70b": (0.00075, 0.00075),
+    "deepseek-r1-distill-qwen-32b":  (0.00029, 0.00029),
+
+    # GPT-OSS
+    "gpt-oss-20b":               (0.00010, 0.00010),
+    "gpt-oss-120b":              (0.00015, 0.00015),
+
+    # Groq Compound (pricing varies dynamically)
+    "groq/compound":             (0.00010, 0.00010),  # placeholder
+
+    # Default fallback
+    "default":                   (0.00010, 0.00010),
 }
+
 
 _enc = None
 
