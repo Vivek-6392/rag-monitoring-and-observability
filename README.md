@@ -44,7 +44,7 @@ Every PR runs `pytest ci/regression_test.py` which fails if:
 ---
 
 ## Complete repo structure created ✅
-```
+```bash
 rag-observability/
 ├── app.py                          ✅ Landing page
 ├── requirements.txt                ✅
@@ -70,3 +70,4 @@ rag-observability/
 │   └── regression_test.py          ✅ pytest suite
 └── .github/workflows/
     └── regression_gate.yml         📋 Copy from above
+```
