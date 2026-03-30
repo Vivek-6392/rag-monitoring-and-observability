@@ -68,7 +68,7 @@ jobs:
       - name: Run integration tests
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GROQ_MODEL: llama-3.1-70b-versatile
+          GROQ_MODEL: llama-3.3-70b-versatile
           P95_LATENCY_THRESHOLD_MS: "8000"
           QUALITY_SCORE_THRESHOLD: "0.4"
           METRICS_DB_PATH: /tmp/ci_metrics.db
@@ -82,7 +82,7 @@ jobs:
       - name: Run full regression eval
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GROQ_MODEL: llama-3.1-70b-versatile
+          GROQ_MODEL: llama-3.3-70b-versatile
           P95_LATENCY_THRESHOLD_MS: "8000"
           QUALITY_SCORE_THRESHOLD: "0.4"
           METRICS_DB_PATH: /tmp/ci_metrics.db
