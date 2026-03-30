@@ -99,3 +99,15 @@ def ingest_directory(directory: Union[str, Path], extensions: tuple = (".txt", "
 def collection_stats() -> dict:
     col = get_or_create_collection()
     return {"total_chunks": col.count(), "collection_name": COLLECTION_NAME}
+
+def ingest_sample_documents() -> int:
+    """Load default sample documents for quick testing."""
+    sample_text = """
+    RAG (Retrieval-Augmented Generation) combines retrieval with generation.
+    It improves factual accuracy by grounding responses in external data.
+    
+    Observability in AI systems includes tracking latency, cost, and quality.
+    p50 and p95 latency are important production metrics.
+    """
+
+    return ingest_text(sample_text, source_name="sample_data")
