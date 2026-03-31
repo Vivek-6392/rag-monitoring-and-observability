@@ -94,7 +94,7 @@ jobs:
 
           from rag.ingest import ingest_sample_documents
           from evaluation.ragas_eval import run_batch_evaluation
-          from evaluation.regression_gate import gate_or_exit
+          from evaluation.regression_gate import run_gate
           from rag.pipeline import run_rag
 
           print("📚 Ingesting sample documents…")
