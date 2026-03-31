@@ -93,7 +93,7 @@ jobs:
           sys.path.insert(0, ".")
 
           from rag.ingest import ingest_sample_documents
-          from evaluation.ragas_eval import run_batch_evaluation
+          from evaluation.ragas_eval import evaluate_response
           from evaluation.regression_gate import run_gate
           from rag.pipeline import run_rag
 
