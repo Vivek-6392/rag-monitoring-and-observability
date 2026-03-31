@@ -95,14 +95,14 @@ jobs:
           from rag.ingest import ingest_sample_documents
           from evaluation.ragas_eval import run_batch_evaluation
           from evaluation.regression_gate import gate_or_exit
-          from rag.pipeline import run_rag_query
+          from rag.pipeline import run_rag
 
           print("📚 Ingesting sample documents…")
           n = ingest_sample_documents()
           print(f"  Loaded {n} chunks")
 
           print("\n🧪 Running batch evaluation…")
-          eval_result = run_batch_evaluation(run_rag_query)
+          eval_result = run_batch_evaluation(run_rag)
 
           summary = eval_result["summary"]
           print(f"\n📊 Eval Summary:")
