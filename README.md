@@ -265,23 +265,26 @@ The GitHub Actions pipeline runs on every PR and push to `main`.
 
 ```
 PR opened
-    │
-    ▼
+│
+▼
 Unit Tests (no API key needed)
-    │  ├── Cost calculation logic
-    │  ├── Regression gate thresholds
-    │  ├── SQLite store operations
-    │  ├── Tracer span timing
-    │  └── Collection ingestion
-    │
-    ▼ (if unit tests pass)
-Integration + Regression Gate (needs GROQ_API_KEY secret)
-    │  ├── End-to-end RAG query test
-    │  ├── Latency within threshold
-    │  ├── Quality score above threshold
-    │  └── Full gate check via run_gate()
-    │
-    ▼
+│
+▼
+Integration Tests (RAG pipeline runs)
+│
+▼
+Metrics Collection
+│ ├── p95 latency
+│ ├── avg quality score
+│ ├── faithfulness / relevancy / precision
+│
+▼
+Baseline Regression Gate
+│ ├── Compare against evaluation/baseline.json
+│ ├── Detect performance degradation
+│ ├── Apply tolerance rules
+│
+▼
 Build passes ✅ or fails ❌
 ```
 
@@ -302,6 +305,7 @@ Build passes ✅ or fails ❌
 | context precision | ≥ 0.55 |
 | p95 latency regression | ≤ +20% vs baseline |
 | quality regression | ≤ −10% vs baseline |
+
 
 ---
 

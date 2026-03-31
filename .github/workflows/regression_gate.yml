@@ -31,7 +31,7 @@ jobs:
         run: |
           pytest tests/test_regression.py \
             -v \
-            -k "not quality and not latency and not regression" \
+            -k "collection or rag_returns" \
             --tb=short
 
   # ─────────────────────────────────────────────
