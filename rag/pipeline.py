@@ -14,7 +14,7 @@ from observability.tracer import Tracer
 from observability.metrics import build_metrics_record
 from observability import store
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "llama-3.1-8b-instant"
 TOP_K = 5
 
 # ── Prompt ─────────────────────────

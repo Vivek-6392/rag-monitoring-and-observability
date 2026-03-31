@@ -114,3 +114,6 @@ def test_regression_gate_passes(api_key, ingested):
     assert gate.passed, f"Regression gate failed:\n{gate.summary}\n\nChecks:\n" + "\n".join(
         str(c) for c in gate.checks if not c.get("passed", True)
     )
+    print("\n📊 FINAL METRICS:")
+    print("Latency:", lat)
+    print("Stats:", stats)

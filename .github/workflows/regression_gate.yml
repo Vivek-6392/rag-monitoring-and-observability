@@ -1,152 +1,3 @@
-# name: RAG Regression Gate
-
-# on:
-#   push:
-#     branches: [main]
-#   pull_request:
-#     branches: [main]
-
-# jobs:
-#   # ───────────────────────────────────────────────────────
-#   # Job 1: Unit tests (no API key needed, always runs)
-#   # ───────────────────────────────────────────────────────
-#   unit-tests:
-#     name: Unit Tests
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Set up Python 3.11
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: "3.11"
-#           cache: pip
-
-#       - name: Install dependencies
-#         run: pip install -r requirements.txt
-
-#       - name: Run unit tests
-#         run: |
-#           pytest tests/test_regression.py \
-#             -v \
-#             -k "not Integration" \
-#             --tb=short \
-#             --junit-xml=reports/unit-test-results.xml
-
-#       - name: Upload unit test report
-#         uses: actions/upload-artifact@v4
-#         if: always()
-#         with:
-#           name: unit-test-results
-#           path: reports/unit-test-results.xml
-
-#   # ───────────────────────────────────────────────────────
-#   # Job 2: Integration + regression gate (needs API key)
-#   # Runs on push to main or PRs with the secret available
-#   # ───────────────────────────────────────────────────────
-#   integration-regression:
-#     name: Integration & Regression Gate
-#     runs-on: ubuntu-latest
-#     needs: unit-tests
-#     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
-
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Set up Python 3.11
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: "3.11"
-#           cache: pip
-
-#       - name: Install dependencies
-#         run: pip install -r requirements.txt
-
-#       - name: Run integration tests
-#         env:
-#           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-#           GROQ_MODEL: llama-3.3-70b-versatile
-#           P95_LATENCY_THRESHOLD_MS: "8000"
-#           QUALITY_SCORE_THRESHOLD: "0.4"
-#           METRICS_DB_PATH: /tmp/ci_metrics.db
-#         run: |
-#           pytest tests/test_regression.py \
-#             -v \
-#             --tb=short \
-#             --junit-xml=reports/integration-test-results.xml
-#         continue-on-error: false
-
-#       - name: Run full regression eval
-#         env:
-#           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-#           GROQ_MODEL: llama-3.3-70b-versatile
-#           P95_LATENCY_THRESHOLD_MS: "8000"
-#           QUALITY_SCORE_THRESHOLD: "0.4"
-#           METRICS_DB_PATH: /tmp/ci_metrics.db
-#           BASELINE_PATH: evaluation/baseline.json
-#         run: |
-#           python - <<'EOF'
-#           import sys
-#           sys.path.insert(0, ".")
-
-#           from rag.ingest import ingest_sample_documents
-#           from evaluation.ragas_eval import evaluate_response
-#           from evaluation.regression_gate import run_gate
-#           from rag.pipeline import run_rag
-
-#           print("📚 Ingesting sample documents…")
-#           n = ingest_sample_documents()
-#           print(f"  Loaded {n} chunks")
-
-#           print("\n🧪 Running batch evaluation…")
-#           eval_result = evaluate_response(run_rag)
-
-#           summary = eval_result["summary"]
-#           print(f"\n📊 Eval Summary:")
-#           print(f"  Queries:       {summary['total_queries']}")
-#           print(f"  Successful:    {summary['successful']}")
-#           print(f"  Avg Quality:   {summary['avg_quality_score']:.4f}")
-#           print(f"  p95 Latency:   {summary['p95_latency_ms']:.0f}ms")
-#           print(f"  Total Cost:    ${summary['total_cost_usd']:.5f}")
-
-#           print("\n🚦 Running regression gate…")
-#           gate_or_exit(summary)
-#           EOF
-
-#       - name: Upload integration test report
-#         uses: actions/upload-artifact@v4
-#         if: always()
-#         with:
-#           name: integration-test-results
-#           path: reports/integration-test-results.xml
-
-#       - name: Comment PR with results
-#         uses: actions/github-script@v7
-#         if: github.event_name == 'pull_request' && always()
-#         with:
-#           script: |
-#             const status = '${{ job.status }}';
-#             const icon = status === 'success' ? '✅' : '❌';
-#             const body = `## ${icon} RAG Regression Gate — ${status.toUpperCase()}
-
-#             | Check | Result |
-#             |-------|--------|
-#             | Unit Tests | ${{ needs.unit-tests.result == 'success' && '✅ Passed' || '❌ Failed' }} |
-#             | Integration Tests | ${status === 'success' ? '✅ Passed' : '❌ Failed'} |
-#             | Regression Gate | ${status === 'success' ? '✅ All gates passed' : '❌ Regression detected'} |
-
-#             See the **Actions** tab for detailed latency and quality metrics.
-#             `;
-#             github.rest.issues.createComment({
-#               issue_number: context.issue.number,
-#               owner: context.repo.owner,
-#               repo: context.repo.repo,
-#               body
-#             });
-
 name: RAG Regression Gate
 
 on:
@@ -156,9 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  # ───────────────────────────────────────────────────────
-  # Job 1: Unit tests (no API key needed, always runs)
-  # ───────────────────────────────────────────────────────
+  # ─────────────────────────────────────────────
+  # Unit Tests (no API key required)
+  # ─────────────────────────────────────────────
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -176,31 +27,22 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run unit tests
+      - name: Run unit tests (no API)
         run: |
-          mkdir -p reports
-          pytest ci/regression_test.py \
+          pytest tests/test_regression.py \
             -v \
-            -k "not api_key" \
-            --tb=short \
-            --junit-xml=reports/unit-test-results.xml
+            -k "not quality and not latency and not regression" \
+            --tb=short
 
-      - name: Upload unit test report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: unit-test-results
-          path: reports/unit-test-results.xml
-
-  # ───────────────────────────────────────────────────────
-  # Job 2: Integration + regression gate (needs API key)
-  # Runs on push to main or PRs from the same repo
-  # ───────────────────────────────────────────────────────
+  # ─────────────────────────────────────────────
+  # Integration + Baseline Regression Gate
+  # ─────────────────────────────────────────────
   integration-regression:
     name: Integration & Regression Gate
     runs-on: ubuntu-latest
     needs: unit-tests
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       - name: Checkout
@@ -215,107 +57,86 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run integration tests
+      # ✅ Run pytest (integration + logging metrics)
+      - name: Run regression tests
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          METRICS_DB_PATH: /tmp/ci_metrics.db
         run: |
-          mkdir -p reports
-          pytest ci/regression_test.py \
+          pytest tests/test_regression.py \
             -v \
             --tb=short \
-            --junit-xml=reports/integration-test-results.xml
+            --junit-xml=reports/test-results.xml
 
-      - name: Run full regression eval
+      # ✅ Baseline regression check (NEW)
+      - name: Run baseline regression gate
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          METRICS_DB_PATH: /tmp/ci_metrics.db
+          BASELINE_PATH: evaluation/baseline.json
         run: |
           python - <<'EOF'
-          import sys, os
+          import os, sys, json
           sys.path.insert(0, ".")
 
-          from observability.store import init_db
-          from rag.ingest import ingest_text, collection_stats
           from rag.pipeline import run_rag
-          from evaluation.ragas_eval import evaluate_response
-          from evaluation.regression_gate import run_gate, THRESHOLDS
+          from rag.ingest import ingest_sample_documents
           from observability.store import get_percentile_latency, get_summary_stats
+          from evaluation.regression_gate import run_gate
 
-          init_db()
-
-          # Ingest sample documents
-          print("📚 Ingesting sample documents…")
-          sample = """
-          Artificial intelligence is the simulation of human intelligence in machines.
-          Machine learning allows systems to learn automatically from experience.
-          Deep learning uses neural networks with many layers.
-          Large language models are trained on vast datasets and perform language tasks.
-          RAG combines retrieval with generation for more accurate answers.
-          Vector databases store high-dimensional embeddings for semantic search.
-          """
-          n = ingest_text(sample, source_name="ci_sample")
-          print(f"  Loaded {n} chunks")
-
-          # Run batch eval
-          test_queries = [
+          TEST_QUERIES = [
               "What is artificial intelligence?",
               "What is machine learning?",
-              "Explain deep learning.",
-              "What are large language models?",
-              "What is RAG?",
+              "Explain deep learning."
           ]
 
-          api_key = os.environ["GROQ_API_KEY"]
-          scores = []
-          latencies = []
+          print("📚 Ingesting documents...")
+          ingest_sample_documents()
 
-          print("\n🧪 Running batch evaluation…")
-          for q in test_queries:
-              result = run_rag(q, api_key=api_key, eval_quality=True)
-              latencies.append(result["metrics"]["latency_total_ms"])
-              if result["metrics"].get("quality_avg") is not None:
-                  scores.append(result["metrics"]["quality_avg"])
-              print(f"  ✓ {q[:50]}")
+          print("🧪 Running queries...")
+          for q in TEST_QUERIES:
+              run_rag(q, eval_quality=True)
 
-          avg_quality = sum(scores) / len(scores) if scores else None
+          print("📊 Collecting metrics...")
           lat = get_percentile_latency()
           stats = get_summary_stats()
 
-          print(f"\n📊 Eval Summary:")
-          print(f"  Queries:     {len(test_queries)}")
-          print(f"  Avg Quality: {avg_quality:.4f}" if avg_quality else "  Avg Quality: N/A")
-          print(f"  p50 Latency: {lat['p50']:.0f}ms")
-          print(f"  p95 Latency: {lat['p95']:.0f}ms")
+          summary = {
+              "p95_latency_ms": lat["p95"],
+              "avg_quality": stats.get("avg_quality"),
+              "avg_faithfulness": stats.get("avg_faithfulness"),
+              "avg_answer_relevancy": stats.get("avg_relevancy"),
+              "avg_context_precision": stats.get("avg_precision"),
+          }
 
-          # Run regression gate
-          print("\n🚦 Running regression gate…")
-          gate = run_gate(
-              p95_latency_ms=lat["p95"],
-              avg_quality=avg_quality,
-              avg_faithfulness=stats.get("avg_faithfulness"),
-              avg_answer_relevancy=stats.get("avg_relevancy"),
-              avg_context_precision=stats.get("avg_precision"),
-          )
+          print(json.dumps(summary, indent=2))
 
-          print(gate.summary)
-          for check in gate.checks:
-              icon = "✅" if check.get("passed", True) else "❌"
-              print(f"  {icon} {check}")
+          baseline_path = os.environ["BASELINE_PATH"]
+
+          if not os.path.exists(baseline_path):
+              raise RuntimeError(
+                  "❌ baseline.json missing. Generate it locally and commit."
+              )
+
+          with open(baseline_path) as f:
+              baseline = json.load(f)
+
+          print("🚦 Running regression gate...")
+          gate = run_gate(**summary, baseline=baseline)
+
+          print(gate.to_json())
 
           if not gate.passed:
-              print("\n❌ Regression gate failed — see checks above.")
+              print("❌ Regression detected!")
               sys.exit(1)
 
-          print("\n✅ All gates passed.")
+          print("✅ Passed baseline regression gate!")
           EOF
 
-      - name: Upload integration test report
+      - name: Upload test report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: integration-test-results
-          path: reports/integration-test-results.xml
+          name: regression-test-results
+          path: reports/test-results.xml
 
       - name: Comment PR with results
         uses: actions/github-script@v7
@@ -324,16 +145,17 @@ jobs:
           script: |
             const status = '${{ job.status }}';
             const icon = status === 'success' ? '✅' : '❌';
+
             const body = `## ${icon} RAG Regression Gate — ${status.toUpperCase()}
 
             | Check | Result |
             |-------|--------|
             | Unit Tests | ${{ needs.unit-tests.result == 'success' && '✅ Passed' || '❌ Failed' }} |
-            | Integration Tests | ${status === 'success' ? '✅ Passed' : '❌ Failed'} |
-            | Regression Gate | ${status === 'success' ? '✅ All gates passed' : '❌ Regression detected'} |
+            | Integration & Regression | ${status === 'success' ? '✅ Passed' : '❌ Failed'} |
 
-            See the **Actions** tab for detailed latency and quality metrics.
+            Baseline comparison enforced.
             `;
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
