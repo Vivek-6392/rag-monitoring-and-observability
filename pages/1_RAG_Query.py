@@ -58,7 +58,7 @@ st.caption("Ask questions · See answers with sources · Full latency and cost b
 st.divider()
 
 # ── Sidebar state ────────────────────────────────────────────────
-api_key = st.session_state.get("groq_api_key", "")
+api_key = st.secrets.get("GROQ_API_KEY", None) or st.session_state.get("groq_api_key", "")
 model = st.session_state.get("model", "llama-3.3-70b-versatile")
 
 with st.sidebar:

@@ -20,15 +20,14 @@ with st.sidebar:
     st.caption("Tracing · Latency · Cost · Quality · CI Gating")
     st.divider()
 
-    api_key = st.text_input(
-        "Groq API Key",
-        type="password",
-        value=st.session_state.get("groq_api_key", ""),
-        help="Get a free key at console.groq.com",
-    )
-    if api_key:
-        st.session_state["groq_api_key"] = api_key
+    # Try to load from Streamlit secrets
+    api_key = st.secrets.get("GROQ_API_KEY", None)
 
+    # Fallback (optional) → allow manual input if not set
+    if not api_key:
+        api_key = st.text_input("Groq API Key", type="password")
+
+    st.session_state["groq_api_key"] = api_key
     model = st.selectbox(
         "Model",
         [
@@ -127,21 +126,6 @@ for col, (icon, title, desc) in zip([col1, col2, col3, col4], cards):
                 st.switch_page("pages/3_Evaluation_Runner.py")
             elif title == "Documents":
                 st.switch_page("pages/4_Document_Manager.py")
-
-# st.divider()
-# st.markdown("### ⚡ Quick Start")
-# st.code("""# 1. Clone and install
-# git clone https://github.com/YOUR_USERNAME/rag-observability
-# cd rag-observability
-# pip install -r requirements.txt
-
-# # 2. Run
-# streamlit run app.py
-
-# # 3. Add your Groq API key in the sidebar (free at console.groq.com)
-# # 4. Go to Documents → ingest some text
-# # 5. Go to RAG Query → ask questions!
-# """, language="bash")
 
 st.markdown("### 🏗️ Stack")
 cols = st.columns(3)
