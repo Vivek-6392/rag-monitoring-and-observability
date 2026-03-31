@@ -1,7 +1,7 @@
 # 🔭 RAG Monitoring & Observability
 
 > Production-grade monitoring for Retrieval-Augmented Generation systems.
-> Tracing · p50/p95 Latency · Cost Tracking · LLM-as-Judge Quality Metrics · CI Regression Gating
+> Tracing · p50/p95 Latency · Cost Tracking · LLM-as-Judge Quality Metrics · Baseline Regression CI
 
 [![CI Regression Gate](https://github.com/Vivek-6392/rag-monitoring-and-observability/actions/workflows/regression_gate.yml/badge.svg)](https://github.com/Vivek-6392/rag-monitoring-and-observability/actions/workflows/regression_gate.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
@@ -25,49 +25,49 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Streamlit Cloud                           │
+│                    Streamlit Cloud                          │
 │                                                             │
-│  ┌──────────────┐  ┌─────────────────┐  ┌───────────────┐  │
-│  │  RAG Query   │  │  Observability  │  │  Evaluation   │  │
-│  │   Page       │  │   Dashboard     │  │   Runner      │  │
-│  └──────┬───────┘  └────────┬────────┘  └──────┬────────┘  │
-│         │                   │                   │           │
-│         └───────────────────┼───────────────────┘           │
+│  ┌──────────────┐  ┌─────────────────┐  ┌───────────────┐   │
+│  │  RAG Query   │  │  Observability  │  │  Evaluation   │   │
+│  │   Page       │  │   Dashboard     │  │   Runner      │   │
+│  └──────┬───────┘  └────────┬────────┘  └──────┬────────┘   │
+│         │                   │                  │            │
+│         └───────────────────┼──────────────────┘            │
 │                             │                               │
 │              ┌──────────────▼──────────────┐                │
-│              │       RAG Pipeline           │                │
+│              │       RAG Pipeline          │                │
 │              │  ┌──────────┐ ┌──────────┐  │                │
 │              │  │Retrieval │ │Generation│  │                │
 │              │  │  Span    │ │  Span    │  │                │
 │              │  └────┬─────┘ └────┬─────┘  │                │
-│              └───────┼────────────┼─────────┘               │
-│                      │            │                          │
+│              └───────┼────────────┼────────┘                │
+│                      │            │                         │
 │         ┌────────────▼────┐  ┌────▼──────────┐              │
 │         │  ChromaDB       │  │  Groq API     │              │
 │         │  (in-memory)    │  │  LLaMA 3 8B   │              │
 │         │  + HuggingFace  │  │               │              │
 │         │  Embeddings     │  └───────────────┘              │
 │         └─────────────────┘                                 │
-│                      │                                       │
-│              ┌────────▼────────┐                             │
-│              │   SQLite DB     │                             │
-│              │  (metrics.db)   │                             │
-│              │  requests table │                             │
-│              │  eval_runs table│                             │
-│              └─────────────────┘                             │
+│                      │                                      │
+│              ┌────────▼────────┐                            │
+│              │   SQLite DB     │                            │
+│              │  (metrics.db)   │                            │
+│              │  requests table │                            │
+│              │  eval_runs table│                            │
+│              └─────────────────┘                            │
 └─────────────────────────────────────────────────────────────┘
 
                     GitHub Actions CI
-              ┌────────────────────────────┐
-              │  On every PR / push:        │
-              │  1. Unit tests (no key)     │
-              │  2. Integration tests       │
-              │  3. Batch eval on golden    │
-              │     dataset                 │
-              │  4. Regression gate:        │
-              │     • p95 latency check     │
-              │     • quality score check   │
-              └────────────────────────────┘
+              ┌───────────────────────────────────────────┐
+              │  On every PR / push:                      │
+              │  1. Unit tests (no key)                   │
+              │  2. Integration tests                     │
+              │  3. Metrics collection (latency + quality)|
+              |  4. Baseline regression gate:             |
+              |    • Compare against `baseline.json`      |
+              |    • Detect latency degradation (≤ +20%)  |
+              |    • Detect quality drop (≤ −10%)         │
+              └───────────────────────────────────────────┘
 ```
 
 ---
@@ -186,6 +186,7 @@ rag-observability/
 ├── evaluation/
 │   ├── __init__.py
 │   ├── ragas_eval.py                   # LLM-as-judge quality scoring
+|   ├── baseline.json
 │   └── regression_gate.py              # Threshold checks + pass/fail logic
 │
 ├── tests/
@@ -305,8 +306,10 @@ Build passes ✅ or fails ❌
 | context precision | ≥ 0.55 |
 | p95 latency regression | ≤ +20% vs baseline |
 | quality regression | ≤ −10% vs baseline |
-
-
+> 📌 Baseline is stored in `evaluation/baseline.json` and must be updated whenever:
+> - model changes
+> - prompt changes
+> - retrieval logic changes
 ---
 
 ## 🧪 Running Tests Locally
@@ -389,5 +392,5 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <p align="center">
   Built as a portfolio project demonstrating production AI observability.<br>
-  <strong>70% of production AI work that nobody puts in their portfolio.</strong>
+  <strong>Production-grade RAG observability with baseline regression testing — the kind of AI engineering most portfolios miss.</strong>
 </p>
