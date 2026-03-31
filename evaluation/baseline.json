@@ -1,7 +1,7 @@
 {
-  "p95_latency_ms": 1800,
-  "avg_quality": 0.62,
-  "avg_faithfulness": 0.60,
-  "avg_answer_relevancy": 0.63,
-  "avg_context_precision": 0.59
+  "p95_latency_ms": 2289.5,
+  "avg_quality": 0.7296,
+  "avg_faithfulness": 0.7903,
+  "avg_answer_relevancy": 0.75,
+  "avg_context_precision": 0.6484
 }
