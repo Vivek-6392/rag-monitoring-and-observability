@@ -102,7 +102,7 @@ jobs:
           print(f"  Loaded {n} chunks")
 
           print("\n🧪 Running batch evaluation…")
-          eval_result = run_batch_evaluation(run_rag)
+          eval_result = evaluate_response(run_rag)
 
           summary = eval_result["summary"]
           print(f"\n📊 Eval Summary:")
