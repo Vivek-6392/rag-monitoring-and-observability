@@ -107,7 +107,6 @@ cards = [
     ("🧪", "Eval & CI Gate", "Run RAGAS-style quality evaluation and regression gating against thresholds."),
     ("📁", "Documents", "Ingest text, PDFs, or paste content directly into the ChromaDB vector store."),
 ]
-
 for col, (icon, title, desc) in zip([col1, col2, col3, col4], cards):
     with col:
         st.markdown(f"""
@@ -115,22 +114,34 @@ for col, (icon, title, desc) in zip([col1, col2, col3, col4], cards):
             <div class="feature-icon">{icon}</div>
             <div class="feature-title">{title}</div>
             <div class="feature-desc">{desc}</div>
-        </div>""", unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
-st.divider()
-st.markdown("### ⚡ Quick Start")
-st.code("""# 1. Clone and install
-git clone https://github.com/YOUR_USERNAME/rag-observability
-cd rag-observability
-pip install -r requirements.txt
+        # Add button below card
+        if st.button(f"Open {title}", key=title):
+            if title == "RAG Query":
+                st.switch_page("pages/1_RAG_Query.py")
+            elif title == "Observability":
+                st.switch_page("pages/2_Observability_Dashboard.py")
+            elif title == "Eval & CI Gate":
+                st.switch_page("pages/3_Evaluation_Runner.py")
+            elif title == "Documents":
+                st.switch_page("pages/4_Document_Manager.py")
 
-# 2. Run
-streamlit run app.py
+# st.divider()
+# st.markdown("### ⚡ Quick Start")
+# st.code("""# 1. Clone and install
+# git clone https://github.com/YOUR_USERNAME/rag-observability
+# cd rag-observability
+# pip install -r requirements.txt
 
-# 3. Add your Groq API key in the sidebar (free at console.groq.com)
-# 4. Go to Documents → ingest some text
-# 5. Go to RAG Query → ask questions!
-""", language="bash")
+# # 2. Run
+# streamlit run app.py
+
+# # 3. Add your Groq API key in the sidebar (free at console.groq.com)
+# # 4. Go to Documents → ingest some text
+# # 5. Go to RAG Query → ask questions!
+# """, language="bash")
 
 st.markdown("### 🏗️ Stack")
 cols = st.columns(3)

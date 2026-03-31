@@ -71,7 +71,6 @@ def build_metrics_record(
     latency_generation_ms: float,
     trace_id: str,
 ) -> dict:
-    """Assemble a full metrics record ready for store.log_request()."""
     import time, json
 
     prompt_text = query + "\n".join(context_docs)
@@ -85,7 +84,8 @@ def build_metrics_record(
         "ts": time.time(),
         "query": query,
         "answer": answer,
-        "sources": json.dumps(context_docs[:3]),
+        "model": model,
+        "sources": json.dumps(context_docs),  # ✅ removed [:3] cap
         "latency_retrieval_ms": round(latency_retrieval_ms, 2),
         "latency_generation_ms": round(latency_generation_ms, 2),
         "latency_total_ms": round(total_ms, 2),

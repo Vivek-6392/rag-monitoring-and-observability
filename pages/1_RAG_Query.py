@@ -73,10 +73,6 @@ with st.sidebar:
             "llama-3.3-70b-versatile",
             "mixtral-8x7b-32768",
             "gemma2-9b-it",
-            "deepseek-r1-distill-llama-70b",
-            "deepseek-r1-distill-qwen-32b",
-            "gpt-oss-20b",
-            "gpt-oss-120b",
             "groq/compound",
         ],
         index=[
@@ -84,10 +80,6 @@ with st.sidebar:
             "llama-3.3-70b-versatile",
             "mixtral-8x7b-32768",
             "gemma2-9b-it",
-            "deepseek-r1-distill-llama-70b",
-            "deepseek-r1-distill-qwen-32b",
-            "gpt-oss-20b",
-            "gpt-oss-120b",
             "groq/compound",
         ].index(model)
         if model in [
@@ -95,10 +87,6 @@ with st.sidebar:
             "llama-3.3-70b-versatile",
             "mixtral-8x7b-32768",
             "gemma2-9b-it",
-            "deepseek-r1-distill-llama-70b",
-            "deepseek-r1-distill-qwen-32b",
-            "gpt-oss-20b",
-            "gpt-oss-120b",
             "groq/compound",
         ]
         else 0,
